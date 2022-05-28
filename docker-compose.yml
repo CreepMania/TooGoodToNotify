@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  tgtg-notify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src
