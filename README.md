@@ -15,4 +15,4 @@ to start the process
 ☑️ Notify errors \
 ☑️ Notify when TooGoodToGo requires connection verification \
 ☑️ Logs !!! \
-🔲 Better notification formatting
+☑️ Better notification formatting
