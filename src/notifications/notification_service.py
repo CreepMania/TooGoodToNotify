@@ -2,6 +2,8 @@ from datetime import datetime
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 
+from src.models import Favorite
+
 
 class MessageType(Enum):
     INFO = 1,
@@ -18,5 +20,9 @@ class NotificationService(metaclass=ABCMeta):
         self._last_message_date = None
 
     @abstractmethod
-    def notify(self, message: str, title: str = "", message_type: MessageType = MessageType.INFO):
+    def notify(self, message: str, title: str, message_type: MessageType = MessageType.INFO):
+        pass
+
+    @abstractmethod
+    def notify_favorite(self, item: Favorite):
         pass

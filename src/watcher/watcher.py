@@ -30,8 +30,7 @@ class Watcher:
         while self.__is_running:
             # refresh credentials
             self.__credentials = Credentials(**self.__client.get_credentials())
-
-            favorites = [Favorite(v['display_name'], v['items_available'], v['in_sales_window'])
+            favorites = [Favorite(v['display_name'], v['items_available'], v['in_sales_window'], v['item']['item_id'])
                          for v in self.__client.get_items()]
             self.__logger.info(f"Found {len(favorites)} favorites")
             # filter on new alerts only, or if Favorite is expired
@@ -42,7 +41,7 @@ class Watcher:
             favorites = [favorite for favorite in favorites if favorite.is_available]
             self.__logger.info(f"Found {len(favorites)} available favorites!")
 
-            [self._notification_service.notify(message=repr(favorite)) for favorite in favorites]
+            [self._notification_service.notify_favorite(favorite) for favorite in favorites]
 
             self.__favorite_cache = favorites
 

@@ -14,5 +14,5 @@ to start the process
 ☑️ Implement Telegram notifications \
 ☑️ Notify errors \
 ☑️ Notify when TooGoodToGo requires connection verification \
-🔲 Logs !!! \
+☑️ Logs !!! \
 🔲 Better notification formatting

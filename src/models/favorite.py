@@ -8,9 +8,10 @@ class Favorite:
     display_name: str
     items_available: int
     in_sales_window: bool
+    item_id: int
 
     def __repr__(self):
-        return f"'{self.display_name}' available! Qty: {self.items_available}"
+        return f"{self.items_available} baskets available!"
 
     @property
     def is_available(self) -> bool:
