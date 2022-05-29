@@ -1,2 +1,2 @@
 from .telegram_notification_service import TelegramNotificationService
-from .notification_service import NotificationService
+from .notification_service import NotificationService, MessageType

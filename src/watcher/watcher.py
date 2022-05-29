@@ -1,6 +1,7 @@
 import asyncio
 import json
 from os.path import exists
+from typing import List
 
 from tgtg import TgtgClient
 from ..environment import TGTG_EMAIL, WATCHER_FREQUENCY
@@ -15,8 +16,9 @@ class Watcher:
     __credentials: Credentials
     __is_running: bool = True
 
+    __favorite_cache: List[Favorite] = None
+
     def __init__(self, notification_service: NotificationService):
-        self.__client = TgtgClient(email=TGTG_EMAIL)
         self._notification_service = notification_service
 
     async def launch(self):
@@ -27,8 +29,15 @@ class Watcher:
             favorites = [Favorite(v['display_name'], v['items_available'], v['in_sales_window'])
                          for v in self.__client.get_items()]
 
+            # filter on new alerts only, or if Favorite is expired
+            if self.__favorite_cache is not None:
+                favorites = [f for f in favorites if f not in self.__favorite_cache or f.is_expired]
+
+            # notify if favorite is available
             [self._notification_service.notify(message=repr(favorite))
-             for favorite in filter(lambda f: f.is_available, favorites)]
+             for favorite in favorites if favorite.is_available]
+
+            self.__favorite_cache = favorites
 
             await asyncio.sleep(WATCHER_FREQUENCY)
 
@@ -42,6 +51,13 @@ class Watcher:
             self.__credentials = Credentials(**tmp)
             with open("./credentials.json") as file:
                 file.write(json.dumps(self.__credentials))
+
+        self.__client = TgtgClient(email=TGTG_EMAIL,
+                                   access_token=self.__credentials.access_token,
+                                   refresh_token=self.__credentials.refresh_token,
+                                   user_id=self.__credentials.user_id,
+                                   notification_service=self._notification_service
+                                   )
 
     def stop(self):
         self.__is_running = False

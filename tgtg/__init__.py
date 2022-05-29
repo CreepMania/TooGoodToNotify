@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from src.notifications import TelegramNotificationService
+from src.notifications import TelegramNotificationService, MessageType
 from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 
@@ -173,7 +173,8 @@ class TgtgClient:
                     "(Mailbox on mobile won't work, if you have installed tgtg app.)"
                 )
                 if self.notification_service is not None:
-                    self.notification_service.notify(message="Check email inbox to connect")
+                    self.notification_service.notify(message="Check email inbox to connect",
+                                                     message_type=MessageType.WARNING)
                 time.sleep(POLLING_WAIT_TIME)
                 continue
             elif response.status_code == HTTPStatus.OK:

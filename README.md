@@ -12,6 +12,7 @@ to start the process
 ☑️ Watch a user bags using tgtg package \
 ☑️ Notify once a bag is available \
 ☑️ Implement Telegram notifications \
-🔲 Notify errors \
-🔲 Notify when TooGoodToGo requires connection verification \
+☑️ Notify errors \
+☑️ Notify when TooGoodToGo requires connection verification \
+🔲 Logs !!! \
 🔲 Better notification formatting

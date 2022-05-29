@@ -1,2 +1,2 @@
-tgtg==0.11.3
 telegram-send==0.34
+requests==2.27.1
