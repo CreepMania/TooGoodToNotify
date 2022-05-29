@@ -4,22 +4,22 @@ import sys
 from http import HTTPStatus
 
 from src.environment import WATCHER_FREQUENCY, LOG_LEVEL
-from tgtg import TgtgAPIError
-
 from src.notifications import TelegramNotificationService, MessageType
 from src.watcher import Watcher
+from tgtg import TgtgAPIError
 
 logger = logging.getLogger(__name__)
 
 
 def init_logger():
-    logging.basicConfig(stream=sys.stdout, level=LOG_LEVEL or logging.NOTSET,
+    logging.basicConfig(stream=sys.stdout, level=LOG_LEVEL,
                         format='%(asctime)-2s | %(levelname)-5s - %(name)-10s -  %(message)s',
                         datefmt="%Y-%m-%d %H:%M:%S")
 
 
 async def main():
     notifier = TelegramNotificationService()
+    notifier.notify(title="🏁 Start", message="Process has started successfully 🎉")
     try:
         watcher: Watcher = Watcher(notifier)
         await watcher.connect()
@@ -42,4 +42,3 @@ async def main():
 if __name__ == "__main__":
     init_logger()
     asyncio.run(main())
-

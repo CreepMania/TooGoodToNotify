@@ -1,5 +1,5 @@
-from datetime import datetime
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 from enum import Enum
 
 from src.models import Favorite
@@ -9,6 +9,13 @@ class MessageType(Enum):
     INFO = 1,
     WARNING = 2,
     ERROR = 3
+
+    @property
+    def emoji(self):
+        if self.value == self.WARNING.value:
+            return "⚠"
+        elif self.value == self.ERROR.value:
+            return "🛑"
 
 
 class NotificationService(metaclass=ABCMeta):
@@ -24,5 +31,5 @@ class NotificationService(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def notify_favorite(self, item: Favorite):
+    def notify_available(self, item: Favorite):
         pass
