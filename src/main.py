@@ -6,7 +6,7 @@ from http import HTTPStatus
 from src.environment import WATCHER_FREQUENCY, LOG_LEVEL
 from src.notifications import TelegramNotificationService, MessageType
 from src.watcher import Watcher
-from tgtg import TgtgAPIError
+from src.tgtg import TgtgAPIError
 
 logger = logging.getLogger(__name__)
 

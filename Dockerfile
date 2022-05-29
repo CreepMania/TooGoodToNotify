@@ -13,4 +13,4 @@ RUN ["telegram-send", "--config", "/app/telegram-send.conf"]
 
 COPY ./src /app/src
 
-CMD ["python", "main.py"]
+CMD ["python", "-m", "src.main.py"]

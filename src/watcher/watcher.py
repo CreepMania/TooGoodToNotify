@@ -10,7 +10,7 @@ from typing import List
 from src.models import Credentials
 from src.models import Favorite, PickupInterval
 from src.notifications import NotificationService
-from tgtg import TgtgClient
+from src.tgtg import TgtgClient
 from ..environment import TGTG_EMAIL, WATCHER_FREQUENCY, CACHE_CREDENTIALS
 
 CREDENTIAL_PATH = "./credentials.json"
