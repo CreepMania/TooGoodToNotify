@@ -55,7 +55,8 @@ class TelegramNotificationService(NotificationService):
     def notify_available(self, item: Favorite):
         title = f"🥘 {item.display_name}"
         day = "Today" if item.pickup_interval.start.day == datetime.today().day else "Tomorrow"
-        message = f"⏳ {day} <b>from {item.pickup_interval.start.astimezone(TZ_INFO):%H:%M}</b>\n" \
+        message = f"⏳ {day} ({item.pickup_interval.start:%d/%m}) " \
+                  f"<b>from {item.pickup_interval.start.astimezone(TZ_INFO):%H:%M}</b>\n" \
                   f"⌛ until <b>{item.pickup_interval.end.astimezone(TZ_INFO):%H:%M}</b>\n\n" \
                   f"{item.items_available} baskets are available!\n" \
                   f"https://share.toogoodtogo.com/item/{item.item_id}/"
