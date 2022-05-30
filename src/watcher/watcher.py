@@ -5,7 +5,6 @@ import logging
 import os.path
 from json import JSONDecodeError
 from logging import Logger
-from typing import List
 
 from src.models import Credentials
 from src.models import Favorite, PickupInterval
@@ -22,39 +21,11 @@ class Watcher:
     __credentials: Credentials = None
     __is_running: bool = True
 
-    __favorite_cache: List[Favorite] = []
     __logger: Logger
 
     def __init__(self, notification_service: NotificationService):
         self.__logger = logging.getLogger(__name__)
         self._notification_service = notification_service
-
-    async def launch(self):
-        self.__logger.info("Started")
-        while self.__is_running:
-            # refresh credentials
-            self.__credentials = Credentials(**self.__client.get_credentials())
-            favorites = [Favorite(v['display_name'],
-                                  v['items_available'],
-                                  v['in_sales_window'],
-                                  v['item']['item_id'],
-                                  PickupInterval(**v.get('pickup_interval') or {}))
-                         for v in self.__client.get_items()]
-            self.__logger.info(f"Found {len(favorites)} favorites")
-            # filter on new alerts only, or if Favorite is expired
-            if len(self.__favorite_cache) > 0:
-                favorites = [f for f in favorites if f not in self.__favorite_cache or f.is_cache_expired]
-
-            # filter on available
-            favorites = list(filter(lambda favorite: favorite.is_available, favorites))
-            self.__logger.info(f"Found {len(favorites)} available favorites!")
-
-            [self._notification_service.notify_available(favorite) for favorite in favorites]
-
-            self.__favorite_cache += favorites
-
-            self.__logger.debug("Sleeping...")
-            await asyncio.sleep(WATCHER_FREQUENCY)
 
     async def connect(self) -> None:
         """
@@ -88,6 +59,28 @@ class Watcher:
                                    user_id=self.__credentials.user_id,
                                    notification_service=self._notification_service
                                    )
+
+    async def launch(self):
+        self.__logger.info("Started")
+        while self.__is_running:
+            # refresh credentials
+            self.__credentials = Credentials(**self.__client.get_credentials())
+            favorites = [Favorite(v['display_name'],
+                                  v['items_available'],
+                                  v['in_sales_window'],
+                                  v['item']['item_id'],
+                                  PickupInterval(**v.get('pickup_interval') or {}))
+                         for v in self.__client.get_items()]
+            self.__logger.info(f"Found {len(favorites)} favorites")
+
+            # filter on available
+            favorites = list(filter(lambda favorite: favorite.is_available, favorites))
+            self.__logger.info(f"Found {len(favorites)} available favorites!")
+
+            [self._notification_service.notify_available(favorite) for favorite in favorites]
+
+            self.__logger.debug("Sleeping...")
+            await asyncio.sleep(WATCHER_FREQUENCY)
 
     def stop(self):
         self.__logger.info("Stopping...")

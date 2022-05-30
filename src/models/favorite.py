@@ -36,4 +36,4 @@ class Favorite:
 
     @property
     def is_cache_expired(self) -> bool:
-        return self.__created_date <= datetime.today() - timedelta(hours=2)
+        return self.__created_date <= datetime.today() - timedelta(hours=12)
