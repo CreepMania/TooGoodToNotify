@@ -1,16 +1,18 @@
 import asyncio
 import dataclasses
+import datetime
 import json
 import logging
 import os.path
 from json import JSONDecodeError
 from logging import Logger
+from typing import Tuple
 
 from src.models import Credentials
 from src.models import Favorite, PickupInterval
 from src.notifications import NotificationService
 from src.tgtg import TgtgClient
-from ..environment import TGTG_EMAIL, WATCHER_FREQUENCY, CACHE_CREDENTIALS
+from ..environment import TGTG_EMAIL, WATCHER_FREQUENCY, CACHE_CREDENTIALS, TZ_INFO
 
 CREDENTIAL_PATH = "./credentials.json"
 
@@ -20,6 +22,7 @@ class Watcher:
     __client: TgtgClient = None
     __credentials: Credentials = None
     __is_running: bool = True
+    __activity_period: Tuple[int, int] = (8, 23)  # active between 8 am and 11 pm
 
     __logger: Logger
 
@@ -61,8 +64,13 @@ class Watcher:
                                    )
 
     async def launch(self):
+        start, end = self.__activity_period
         self.__logger.info("Started")
         while self.__is_running:
+            current_hour = datetime.datetime.today().astimezone(TZ_INFO).hour
+            if not (start <= current_hour < end):
+                await asyncio.sleep(WATCHER_FREQUENCY)
+
             # refresh credentials
             self.__credentials = Credentials(**self.__client.get_credentials())
             favorites = [Favorite(v['display_name'],

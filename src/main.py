@@ -37,6 +37,7 @@ async def main():
         logger.error(ex)
         notifier.notify(title=str(ex), message=repr(ex), message_type=MessageType.ERROR)
         await asyncio.sleep(WATCHER_FREQUENCY)
+        await main()
 
 
 if __name__ == "__main__":
