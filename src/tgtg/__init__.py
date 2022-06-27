@@ -1,5 +1,6 @@
 import datetime
 import random
+import sys
 import time
 from http import HTTPStatus
 from urllib.parse import urljoin
@@ -7,6 +8,7 @@ from urllib.parse import urljoin
 import requests
 
 from src.notifications import TelegramNotificationService, MessageType
+from .google_play_scraper import get_last_apk_version
 from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
@@ -17,10 +19,11 @@ SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v3/token/refresh"
 ACTIVE_ORDER_ENDPOINT = "order/v6/active"
 INACTIVE_ORDER_ENDPOINT = "order/v6/inactive"
+DEFAULT_APK_VERSION = "22.5.5"
 USER_AGENTS = [
-    "TGTG/22.5.5 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
-    "TGTG/22.5.5 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
-    "TGTG/22.5.5 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 10; SM-G935F Build/NRD90M)",
+    "TGTG/{} Dalvik/2.1.0 (Linux; Android 12; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 MAX_POLLING_TRIES = 24  # 24 * POLLING_WAIT_TIME = 2 minutes
@@ -29,19 +32,19 @@ POLLING_WAIT_TIME = 5  # Seconds
 
 class TgtgClient:
     def __init__(
-            self,
-            url=BASE_URL,
-            email=None,
-            access_token=None,
-            refresh_token=None,
-            user_id=None,
-            user_agent=None,
-            language="en-UK",
-            proxies=None,
-            timeout=None,
-            access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
-            device_type="ANDROID",
-            notification_service=TelegramNotificationService()
+        self,
+        url=BASE_URL,
+        email=None,
+        access_token=None,
+        refresh_token=None,
+        user_id=None,
+        user_agent=None,
+        language="en-UK",
+        proxies=None,
+        timeout=None,
+        access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
+        device_type="ANDROID",
+        notification_service=TelegramNotificationService()
     ):
 
         self.base_url = url
@@ -57,7 +60,7 @@ class TgtgClient:
 
         self.device_type = device_type
 
-        self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
+        self.user_agent = user_agent if user_agent else self._get_user_agent()
         self.language = language
         self.proxies = proxies
         self.timeout = timeout
@@ -65,6 +68,17 @@ class TgtgClient:
         self.session.headers = self._headers
 
         self.notification_service = notification_service
+
+    def _get_user_agent(self):
+        try:
+            self.version = get_last_apk_version()
+        except Exception:
+            self.version = DEFAULT_APK_VERSION
+            sys.stdout.write("Failed to get last version\n")
+
+        sys.stdout.write(f"Using version {self.version}\n")
+
+        return random.choice(USER_AGENTS).format(self.version)
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
@@ -94,9 +108,9 @@ class TgtgClient:
 
     def _refresh_token(self):
         if (
-                self.last_time_token_refreshed
-                and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
-                <= self.access_token_lifetime
+            self.last_time_token_refreshed
+            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
+            <= self.access_token_lifetime
         ):
             return
 
@@ -116,7 +130,7 @@ class TgtgClient:
 
     def login(self):
         if not (
-                self.email or self.access_token and self.refresh_token and self.user_id
+            self.email or self.access_token and self.refresh_token and self.user_id
         ):
             raise TypeError(
                 "You must provide at least email or access_token, refresh_token and user_id"
@@ -167,9 +181,9 @@ class TgtgClient:
                 timeout=self.timeout,
             )
             if response.status_code == HTTPStatus.ACCEPTED:
-                print(
+                sys.stdout.write(
                     "Check your mailbox on PC to continue... "
-                    "(Mailbox on mobile won't work, if you have installed tgtg app.)"
+                    "(Mailbox on mobile won't work, if you have installed tgtg app.)\n"
                 )
                 if self.notification_service is not None:
                     self.notification_service.notify(
@@ -180,7 +194,7 @@ class TgtgClient:
                 time.sleep(POLLING_WAIT_TIME)
                 continue
             elif response.status_code == HTTPStatus.OK:
-                print("Logged in!")
+                sys.stdout.write("Logged in!\n")
                 login_response = response.json()
                 self.access_token = login_response["access_token"]
                 self.refresh_token = login_response["refresh_token"]
@@ -200,23 +214,23 @@ class TgtgClient:
         )
 
     def get_items(
-            self,
-            *,
-            latitude=0.0,
-            longitude=0.0,
-            radius=21,
-            page_size=20,
-            page=1,
-            discover=False,
-            favorites_only=True,
-            item_categories=None,
-            diet_categories=None,
-            pickup_earliest=None,
-            pickup_latest=None,
-            search_phrase=None,
-            with_stock_only=False,
-            hidden_only=False,
-            we_care_only=False,
+        self,
+        *,
+        latitude=0.0,
+        longitude=0.0,
+        radius=21,
+        page_size=20,
+        page=1,
+        discover=False,
+        favorites_only=True,
+        item_categories=None,
+        diet_categories=None,
+        pickup_earliest=None,
+        pickup_latest=None,
+        search_phrase=None,
+        with_stock_only=False,
+        hidden_only=False,
+        we_care_only=False,
     ):
         self.login()
 
@@ -277,13 +291,13 @@ class TgtgClient:
             raise TgtgAPIError(response.status_code, response.content)
 
     def signup_by_email(
-            self,
-            *,
-            email,
-            name="",
-            country_id="GB",
-            newsletter_opt_in=False,
-            push_notification_opt_in=True,
+        self,
+        *,
+        email,
+        name="",
+        country_id="GB",
+        newsletter_opt_in=False,
+        push_notification_opt_in=True,
     ):
         response = self.session.post(
             self._get_url(SIGNUP_BY_EMAIL_ENDPOINT),

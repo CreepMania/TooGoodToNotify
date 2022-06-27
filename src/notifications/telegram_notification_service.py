@@ -35,7 +35,7 @@ class TelegramNotificationService(NotificationService):
         self._last_messages = []
         self.__logger = logging.getLogger(__name__)
 
-    def notify(self, message: str, title: str, message_type: MessageType = MessageType.INFO):
+    def notify(self, message: str, title: str, message_type: MessageType = MessageType.INFO, parse_mode: str = "html"):
         # don't send if message is identical
 
         notification = list(filter(lambda m: m.message == message, self._last_messages))
@@ -49,7 +49,7 @@ class TelegramNotificationService(NotificationService):
                                      title,
                                      message)
 
-        telegram_send.send(conf=TELEGRAM_CONFIG_PATH, messages=[msg], parse_mode="html", disable_web_page_preview=True)
+        telegram_send.send(conf=TELEGRAM_CONFIG_PATH, messages=[msg], parse_mode=parse_mode, disable_web_page_preview=True)
         self.__clean_cache()
 
     def notify_available(self, item: Favorite):

@@ -28,14 +28,14 @@ async def main():
         logger.error(ex)
         status_code, msg = ex.args
         if status_code == HTTPStatus.TOO_MANY_REQUESTS:
-            notifier.notify(title=msg, message=repr(ex), message_type=MessageType.ERROR)
+            notifier.notify(title=msg, message=repr(ex), message_type=MessageType.ERROR, parse_mode="text")
             await asyncio.sleep(30 * 60)  # sleep 30 minutes
         else:
-            notifier.notify(title=msg, message=repr(ex), message_type=MessageType.ERROR)
+            notifier.notify(title=msg, message=repr(ex), message_type=MessageType.ERROR, parse_mode="text")
             await asyncio.sleep(WATCHER_FREQUENCY)
     except Exception as ex:
         logger.error(ex)
-        notifier.notify(title=str(ex), message=repr(ex), message_type=MessageType.ERROR)
+        notifier.notify(title=str(ex), message=repr(ex), message_type=MessageType.ERROR, parse_mode="text")
         await asyncio.sleep(WATCHER_FREQUENCY)
         await main()
 
